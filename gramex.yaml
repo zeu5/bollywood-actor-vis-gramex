@@ -1,0 +1,40 @@
+app:
+ browser: /
+
+handlers:
+ FileHandler:
+  ignore:
+  - "*" 
+
+url:
+ home:
+  pattern: /
+  handler: FileHandler
+  kwargs:
+   path: index.html
+   allow: 
+   - index.html
+
+ static:
+  pattern: /static/(.*)
+  handler: FileHandler
+  kwargs:
+   path: static/
+   allow:
+   - "*" 
+
+ get_movies:
+  pattern: /get_movies
+  handler: FunctionHandler
+  kwargs:
+    function: api.get_movies
+    headers:
+      Content-Type: application/json
+
+ get_actors:
+  pattern: /get_actors
+  handler: FunctionHandler
+  kwargs:
+    function: api.get_actors
+    headers:
+      Content-Type: application/json
