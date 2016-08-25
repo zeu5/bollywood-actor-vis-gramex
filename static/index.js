@@ -334,8 +334,6 @@
 			svg.append('g').attr('class','nodes');
 
 			simulation = d3.forceSimulation()
-				.alphaTarget(1)
-				.velocityDecay(0.3)
 			    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(50))
 			    .force("charge", d3.forceManyBody())
 			    // .force("center", d3.forceCenter(dim.width / 2, dim.height / 2))
@@ -455,15 +453,30 @@
 				server.get_movies(actor,function(data, actor){
 					var movies_not_there = graph.update_actor(actor,data);
 
-					update();
+					//Update actor with those movies and return those movies that are not there.
+					//Add those movies that are not there with this current actor and fetch actor details of all those movies
+
+					movies_not_there.forEach(function(movie, index){
+						setTimeout(function(){
+							graph.add_movie(movie,[actor]);
+							update();
+						},(20+index*2));
+					})
 
 					if(movies_not_there.length === 0){return;}
-					movies_not_there.forEach(function(movie){
-						server.get_actors(movie,function(actors, movie){
-							graph.add_movie(movie,actors);
-							update();
+					server.get_actors(movies_not_there,function(actors, movies){
+						//After fetching the details of all those movies you update them with the new actors list.
+						//Discard those actors who are not present.
+
+						movies.forEach(function(movie,index){
+							setTimeout(function(){
+								graph.update_movie(movie,actors[movie]);
+								update();
+							},(20+2*index));
 						});
 					});
+
+					//This way only teo requests will be made and the server will not take much load.
 				});
 			}
 
@@ -471,16 +484,23 @@
 				server.get_actors(movie,function(data, movie){
 					var actors_not_there = graph.update_movie(movie,data);
 
-					update();
+					actors_not_there.forEach(function(actor,index){
+						setTimeout(function(){
+							graph.add_actor(actor,[movie]);
+							update();
+						},(20+index*2));
+					})
 
 					if( actors_not_there.length === 0 ){ return; }
 
-					actors_not_there.forEach(function(actor){
-						server.get_movies(actor,function(movies,actor){
-							graph.add_actor(actor, movies);
-							update();
+					server.get_movies(actors_not_there,function(movies,actors){
+						actors.forEach(function(actor,index){
+							setTimeout(function(){
+								graph.update_actor(actor,movies[actor]);
+								update();
+							},(20+index*2));
 						});
-					});
+					});					
 				});
 			}
 		}

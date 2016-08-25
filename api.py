@@ -20,7 +20,11 @@ def get_movies(handler):
 	The JSON format is an array of object where each object is a map of actor to an array of his movies
 	[ { actor1 : [movie1, movie2] }, { actor2 : [movie2, movie3] } ]
 	"""
-	actors = handler.get_argument('actors')
+	try:
+		actors = handler.get_argument('actors')
+	except e:
+		handler.send_error(204)
+
 	if search('([\w ]+,)*([\w ]+)', actors, UNICODE):
 		# If actors are in comma seperated format
 		actors = actors.split(',')
@@ -43,7 +47,11 @@ def get_actors(handler):
 	[ { movie1 : [actor1, actor2] }, { movie2 : [actor2, actor3] } ]
 	"""
 
-	movies = handler.get_argument('movies')
+	try:
+		movies = handler.get_argument('movies')
+	except Exception, e:
+		handler.send_error(204)
+		
 	if search('([\w ]+,)*([\w ]+)', movies, UNICODE):
 		# If movies are in comma seperated format
 		movies = movies.split(',')
